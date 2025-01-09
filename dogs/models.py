@@ -1,6 +1,9 @@
 from django.db import models
 
 
+NULLABLE = {'blank': True, 'null': True}
+
+
 class Breed(models.Model):
 
     SIZE_CHOICES = [
@@ -20,19 +23,19 @@ class Breed(models.Model):
         verbose_name='Размер породы'
     )
     friendliness = models.PositiveSmallIntegerField(
-        choices=[i for i in range(1, 6)],
+        choices=[(i, i) for i in range(1, 6)],
         verbose_name='Дружелюбие породы'
     )
     trainability = models.PositiveSmallIntegerField(
-        choices=[i for i in range(1, 6)],
+        choices=[(i, i) for i in range(1, 6)],
         verbose_name='Обучаемость породы'
     )
     shedding_amount = models.PositiveSmallIntegerField(
-        choices=[i for i in range(1, 6)],
+        choices=[(i, i) for i in range(1, 6)],
         verbose_name='Количество линьки шерсти'
     )
     exercise_needs = models.PositiveSmallIntegerField(
-        choices=[i for i in range(1, 6)],
+        choices=[(i, i) for i in range(1, 6)],
         verbose_name='Необходимые упражнения'
     )
 
@@ -57,7 +60,8 @@ class Dog(models.Model):
     breed = models.ForeignKey(
         Breed,
         on_delete=models.SET_NULL,
-        verbose_name='Порода собаки'
+        verbose_name='Порода собаки',
+        **NULLABLE
     )
     gender = models.CharField(
         max_length=20,
