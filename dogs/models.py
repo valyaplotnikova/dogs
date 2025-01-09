@@ -5,6 +5,17 @@ NULLABLE = {'blank': True, 'null': True}
 
 
 class Breed(models.Model):
+    """
+    Модель для представления породы собаки.
+
+    Attributes:
+        name (str): Название породы.
+        size (str): Размер породы (Tiny, Small, Medium, Large).
+        friendliness (int): Дружелюбие (1-5).
+        trainability (int): Обучаемость (1-5).
+        shedding_amount (int): Количество линьки (1-5).
+        exercise_needs (int): Потребности в физических упражнениях (1-5).
+    """
 
     SIZE_CHOICES = [
         ('Tiny', 'Tiny'),
@@ -49,6 +60,23 @@ class Breed(models.Model):
 
 
 class Dog(models.Model):
+    """
+    Модель для представления собаки.
+
+    Attributes:
+        name (str): Имя собаки.
+        age (int): Возраст собаки.
+        breed (ForeignKey): Порода собаки.
+        gender (str): Пол собаки.
+        color (str): Цвет собаки.
+        favorite_food (str): Любимая еда собаки.
+        favorite_toy (str): Любимая игрушка собаки.
+    """
+
+    GENDER_CHOICES = [
+        ('Male', 'Male'),
+        ('Female', 'Female'),
+    ]
 
     name = models.CharField(
         max_length=50,
@@ -59,12 +87,14 @@ class Dog(models.Model):
     )
     breed = models.ForeignKey(
         Breed,
+        related_name='dogs',
         on_delete=models.SET_NULL,
         verbose_name='Порода собаки',
         **NULLABLE
     )
     gender = models.CharField(
-        max_length=20,
+        max_length=10,
+        choices=GENDER_CHOICES,
         verbose_name='Пол собаки'
     )
     color = models.CharField(
