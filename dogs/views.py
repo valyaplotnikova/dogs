@@ -1,6 +1,6 @@
 from rest_framework import viewsets, status
 from rest_framework.response import Response
-from django.db.models import Avg, Count
+from django.db.models import Avg, Count, Prefetch, OuterRef, Subquery
 from .models import Dog, Breed
 from .serializers import DogSerializer, BreedSerializer
 
@@ -26,8 +26,15 @@ class DogViewSet(viewsets.ModelViewSet):
         Returns:
             Response: Ответ с сериализованным списком собак и их средним возрастом.
         """
-        dogs = self.queryset.annotate(avg_age=Avg('age'))
+        breeds = Breed.objects.annotate(avg_age=Avg('dogs__age'))
+        breed_avg_age_dict = {breed.id: breed.avg_age for breed in breeds}
+        dogs = Dog.objects.select_related('breed')
         serializer = self.get_serializer(dogs, many=True)
+
+        for dog_data in serializer.data:
+            breed_id = dog_data['breed']
+            dog_data['avg_age'] = breed_avg_age_dict.get(breed_id, None)
+
         return Response(serializer.data)
 
     def create(self, request, *args, **kwargs):
@@ -128,7 +135,9 @@ class BreedViewSet(viewsets.ModelViewSet):
         Returns:
             Response: Ответ с сериализованным списком пород и количеством собак каждой породы.
         """
-        breeds = self.queryset.annotate(dog_count=Count('dogs'))
+        dogs_count_subquery = Dog.objects.filter(breed=OuterRef('pk')).values('breed').annotate(
+            count=Count('id')).values('count')
+        breeds = self.queryset.annotate(dogs_count=Subquery(dogs_count_subquery))
         serializer = self.get_serializer(breeds, many=True)
         return Response(serializer.data)
 
